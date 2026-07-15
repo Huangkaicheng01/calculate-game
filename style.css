@@ -49,7 +49,7 @@ body {
 
 .brand h1 {
     font-family: "ZCOOL KuaiLe", cursive;
-    font-size: clamp(2.4rem, 8vw, 3.4rem);
+    font-size: clamp(2.2rem, 8vw, 3.2rem);
     letter-spacing: 0.04em;
     color: var(--coral-deep);
     text-shadow: 0 3px 0 rgba(255, 248, 240, 0.7);
@@ -58,64 +58,143 @@ body {
 
 .tagline {
     margin-top: 0.35rem;
-    font-size: 1rem;
+    font-size: 0.92rem;
     font-weight: 800;
+    line-height: 1.45;
     opacity: 0.75;
 }
 
+.stats-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 1.25rem;
+}
+
+.stat {
+    background: rgba(255, 248, 240, 0.75);
+    border-radius: 16px;
+    padding: 0.7rem 0.85rem;
+    box-shadow: 0 3px 0 rgba(31, 58, 77, 0.1);
+}
+
+.stat-label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 800;
+    opacity: 0.65;
+    margin-bottom: 0.15rem;
+}
+
+.stat span:last-child {
+    font-family: "ZCOOL KuaiLe", cursive;
+    font-size: 1.35rem;
+    color: var(--coral-deep);
+}
+
 .screen {
-    margin-top: 1.75rem;
+    margin-top: 1.25rem;
     animation: fade-in 0.4s ease;
 }
 
 .hidden,
 .options.hidden,
-.answer-form.hidden {
+.answer-form.hidden,
+.btn.hidden {
     display: none !important;
 }
 
 .intro {
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     line-height: 1.5;
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.1rem;
 }
 
-.mode-list {
+.level-list {
     display: grid;
-    gap: 0.85rem;
+    gap: 0.75rem;
+    max-height: min(52vh, 420px);
+    overflow-y: auto;
+    padding-right: 2px;
 }
 
-.mode-btn {
+.level-btn {
     appearance: none;
     border: 3px solid transparent;
     background: var(--cream);
     color: var(--ink);
     font-family: inherit;
     text-align: left;
-    padding: 1rem 1.15rem;
+    padding: 0.85rem 1rem;
     border-radius: 18px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
     box-shadow: 0 4px 0 rgba(31, 58, 77, 0.12);
     transition: transform 0.12s ease, border-color 0.12s ease;
 }
 
-.mode-btn:hover {
+.level-btn:hover:not(:disabled) {
     transform: translateY(-2px);
     border-color: rgba(232, 93, 76, 0.45);
+}
+
+.level-btn.current {
+    border-color: rgba(232, 93, 76, 0.55);
+}
+
+.level-btn.cleared {
+    background: #e7f8ef;
+}
+
+.level-btn.locked {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.level-num {
+    flex: 0 0 2.4rem;
+    height: 2.4rem;
+    border-radius: 50%;
+    background: var(--coral);
+    color: var(--cream);
+    font-family: "ZCOOL KuaiLe", cursive;
+    font-size: 1.2rem;
+    display: grid;
+    place-items: center;
+}
+
+.level-btn.cleared .level-num {
+    background: var(--mint);
+}
+
+.level-btn.locked .level-num {
+    background: #9bb0bc;
+}
+
+.level-info {
+    min-width: 0;
 }
 
 .mode-name {
     display: block;
     font-family: "ZCOOL KuaiLe", cursive;
-    font-size: 1.35rem;
-    margin-bottom: 0.2rem;
+    font-size: 1.2rem;
+    margin-bottom: 0.15rem;
 }
 
 .mode-desc {
     display: block;
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 600;
     opacity: 0.7;
+}
+
+.reset-btn {
+    margin-top: 1rem;
+    width: 100%;
+    font-size: 1rem;
 }
 
 .btn {
@@ -203,6 +282,49 @@ body {
     gap: 0.75rem;
 }
 
+.result-reward {
+    margin: 0.75rem 0 1rem;
+}
+
+.reward-gain {
+    font-family: "ZCOOL KuaiLe", cursive;
+    font-size: 2rem;
+    color: var(--mint);
+}
+
+.reward-time,
+.reward-final {
+    font-weight: 800;
+    margin-top: 0.35rem;
+}
+
+.reward-fail {
+    font-family: "ZCOOL KuaiLe", cursive;
+    font-size: 1.4rem;
+    color: var(--coral-deep);
+}
+
+.reward-note {
+    margin-top: 0.35rem;
+    font-weight: 700;
+    opacity: 0.75;
+}
+
+.result-totals {
+    background: rgba(255, 248, 240, 0.75);
+    border-radius: 16px;
+    padding: 0.9rem 1rem;
+    margin-bottom: 1.25rem;
+    font-weight: 800;
+    line-height: 1.7;
+}
+
+.result-totals strong {
+    font-family: "ZCOOL KuaiLe", cursive;
+    color: var(--coral-deep);
+    font-size: 1.2rem;
+}
+
 .progress {
     margin-bottom: 1.5rem;
 }
@@ -236,6 +358,14 @@ body {
     animation: pop-in 0.35s ease;
 }
 
+.question.long {
+    font-family: "Nunito", "ZCOOL KuaiLe", sans-serif;
+    font-size: clamp(1.25rem, 4.5vw, 1.55rem);
+    font-weight: 800;
+    line-height: 1.45;
+    text-align: left;
+}
+
 .options {
     display: grid;
     gap: 0.75rem;
@@ -248,7 +378,8 @@ body {
     color: var(--ink);
     font-family: inherit;
     font-weight: 800;
-    font-size: 1.35rem;
+    font-size: 1.15rem;
+    line-height: 1.35;
     padding: 0.95rem 1rem;
     border-radius: 18px;
     cursor: pointer;
@@ -301,9 +432,8 @@ body {
 }
 
 .result-msg {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 800;
-    margin-bottom: 1.5rem;
     opacity: 0.85;
 }
 
