@@ -4,6 +4,7 @@
     const POINT_PER_PASS = 1;
     const MINUTES_PER_POINT = 14;
     const MAX_TABLET_MINUTES = 70;
+    const MAX_LEVELS = 5;
     const STORAGE_KEY = "math-adventure-v3";
 
     const TYPE_LABELS = {
@@ -15,44 +16,9 @@
         english: "英语单词 · 选择题",
     };
 
-    /** 后续加关卡：最多保持 5 关；在 BANK / makeMathQuestion 里补题型即可 */
-    const LEVELS = [
-        { type: "mul-2x1", name: "第 1 关 · 乘法起步" },
-        { type: "mul-2x2", name: "第 2 关 · 两位数乘法" },
-        { type: "div-3x2", name: "第 3 关 · 两位数除法" },
-        { type: "science", name: "第 4 关 · 科学常识" },
-        { type: "english", name: "第 5 关 · 英语单词" },
-    ];
-
-    const SCIENCE_BANK = [
-        { prompt: "植物进行光合作用，主要需要什么？", answer: "阳光、水和二氧化碳", options: ["只有土壤", "阳光、水和二氧化碳", "只有空气", "只有水"] },
-        { prompt: "地球绕太阳转一圈大约多久？", answer: "一年", options: ["一天", "一个月", "一年", "十年"] },
-        { prompt: "磁铁的两端分别叫什么？", answer: "南极和北极", options: ["东极和西极", "南极和北极", "正极和负极", "左极和右极"] },
-        { prompt: "水沸腾时的温度大约是？", answer: "100℃", options: ["0℃", "37℃", "100℃", "200℃"] },
-        { prompt: "下列哪种动物是哺乳动物？", answer: "鲸鱼", options: ["鲨鱼", "鲸鱼", "企鹅", "青蛙"] },
-        { prompt: "影子是怎么形成的？", answer: "光线被物体挡住", options: ["物体自己发光", "光线被物体挡住", "风吹出来的", "声音形成的"] },
-        { prompt: "声音主要通过什么传播？", answer: "空气等介质", options: ["真空", "空气等介质", "只有金属", "只有水"] },
-        { prompt: "月亮本身会发光吗？", answer: "不会，反射太阳光", options: ["会自己发光", "不会，反射太阳光", "只在晚上发光", "靠地球发光"] },
-        { prompt: "下列哪个是可再生能源？", answer: "太阳能", options: ["煤炭", "石油", "太阳能", "天然气"] },
-        { prompt: "人体最大的器官是？", answer: "皮肤", options: ["心脏", "大脑", "皮肤", "胃"] },
-        { prompt: "昆虫一般有几条腿？", answer: "6 条", options: ["4 条", "6 条", "8 条", "10 条"] },
-        { prompt: "物体从高处落下，主要受什么力？", answer: "重力", options: ["浮力", "磁力", "重力", "摩擦力"] },
-    ];
-
-    const ENGLISH_BANK = [
-        { prompt: "apple 的中文意思是？", answer: "苹果", options: ["香蕉", "苹果", "橙子", "葡萄"] },
-        { prompt: "school 的中文意思是？", answer: "学校", options: ["商店", "医院", "学校", "公园"] },
-        { prompt: "哪一个表示“快乐的”？", answer: "happy", options: ["sad", "happy", "angry", "tired"] },
-        { prompt: "book 的中文意思是？", answer: "书", options: ["笔", "书", "桌子", "椅子"] },
-        { prompt: "哪一个表示“朋友”？", answer: "friend", options: ["family", "friend", "teacher", "doctor"] },
-        { prompt: "water 的中文意思是？", answer: "水", options: ["火", "水", "风", "土"] },
-        { prompt: "哪一个表示“猫”？", answer: "cat", options: ["dog", "bird", "cat", "fish"] },
-        { prompt: "red 的中文意思是？", answer: "红色", options: ["蓝色", "绿色", "黄色", "红色"] },
-        { prompt: "哪一个表示“早上”？", answer: "morning", options: ["night", "morning", "evening", "noon"] },
-        { prompt: "thank you 的中文意思是？", answer: "谢谢", options: ["对不起", "再见", "谢谢", "你好"] },
-        { prompt: "哪一个表示“大的”？", answer: "big", options: ["small", "short", "big", "thin"] },
-        { prompt: "family 的中文意思是？", answer: "家庭", options: ["学校", "家庭", "班级", "朋友"] },
-    ];
+    let LEVELS = [];
+    let SCIENCE_BANK = [];
+    let ENGLISH_BANK = [];
 
     const mapScreen = document.getElementById("map-screen");
     const quizScreen = document.getElementById("quiz-screen");
@@ -77,6 +43,7 @@
     const resetBtn = document.getElementById("reset-btn");
     const statPoints = document.getElementById("stat-points");
     const statMinutes = document.getElementById("stat-minutes");
+    const introEl = document.querySelector("#map-screen .intro");
     const canvas = document.getElementById("fireworks");
     const ctx = canvas.getContext("2d");
 
@@ -89,6 +56,7 @@
     let locked = false;
     let particles = [];
     let animId = null;
+    let ready = false;
 
     function defaultState() {
         return { unlocked: 0, points: 0, cleared: {} };
@@ -135,6 +103,33 @@
         return a;
     }
 
+    async function loadJson(path) {
+        const res = await fetch(path);
+        if (!res.ok) throw new Error(`无法读取 ${path}`);
+        return res.json();
+    }
+
+    async function loadQuestionFiles() {
+        const [levelsData, scienceData, englishData] = await Promise.all([
+            loadJson("questions/levels.json"),
+            loadJson("questions/science.json"),
+            loadJson("questions/english.json"),
+        ]);
+
+        LEVELS = (levelsData.levels || []).slice(0, MAX_LEVELS);
+        SCIENCE_BANK = scienceData.questions || [];
+        ENGLISH_BANK = englishData.questions || [];
+
+        if (!LEVELS.length) throw new Error("levels.json 里还没有关卡");
+        if (!SCIENCE_BANK.length) throw new Error("science.json 里还没有题目");
+        if (!ENGLISH_BANK.length) throw new Error("english.json 里还没有题目");
+
+        if (state.unlocked > LEVELS.length - 1) {
+            state.unlocked = LEVELS.length - 1;
+            saveState();
+        }
+    }
+
     function makeMathQuestion(type) {
         if (type === "mul-2x1") {
             const a = rand(12, 99);
@@ -171,7 +166,6 @@
             };
         }
 
-        // div-3x2：三位数 ÷ 两位数，保证整除
         const b = rand(11, 28);
         const answer = rand(4, 35);
         const a = b * answer;
@@ -223,26 +217,38 @@
         updateStatsBar();
         levelList.innerHTML = "";
 
+        const allCleared = Object.keys(state.cleared).length === LEVELS.length;
+
         LEVELS.forEach((level, i) => {
             const lockedLevel = i > state.unlocked;
             const cleared = Boolean(state.cleared[i]);
+            const playable = !lockedLevel && !cleared;
             const btn = document.createElement("button");
             btn.type = "button";
             btn.className = "level-btn";
             if (lockedLevel) btn.classList.add("locked");
             if (cleared) btn.classList.add("cleared");
             if (i === state.unlocked && !cleared) btn.classList.add("current");
-            btn.disabled = lockedLevel;
+            btn.disabled = !playable;
+            let status = " · 可挑战";
+            if (cleared) status = " · 已通关（不可再答）";
+            else if (lockedLevel) status = " · 未解锁";
             btn.innerHTML = `
                 <span class="level-num">${i + 1}</span>
                 <span class="level-info">
                     <span class="mode-name">${level.name}</span>
-                    <span class="mode-desc">${TYPE_LABELS[level.type]}${cleared ? " · 已通关" : lockedLevel ? " · 未解锁" : " · 可挑战"}</span>
+                    <span class="mode-desc">${TYPE_LABELS[level.type] || level.type}${status}</span>
                 </span>
             `;
-            if (!lockedLevel) btn.addEventListener("click", () => startLevel(i));
+            if (playable) btn.addEventListener("click", () => startLevel(i));
             levelList.appendChild(btn);
         });
+
+        if (introEl && ready) {
+            introEl.textContent = allCleared
+                ? `全部通关！得分 ${state.points}，平板 ${tabletMinutes()} 分钟。已完成关卡不能再答，可点「重新开始闯关」清空进度。`
+                : `共 ${LEVELS.length} 关。科学 ${SCIENCE_BANK.length} 题、英语 ${ENGLISH_BANK.length} 题。通关后的关卡不能再重新答题。`;
+        }
 
         showScreen(mapScreen);
     }
@@ -331,40 +337,36 @@
 
     function finishLevel() {
         const passed = correctCount >= PASS_NEED;
-        const alreadyCleared = Boolean(state.cleared[levelIndex]);
 
         resultDetail.textContent = `本关答对 ${correctCount} / ${TOTAL} 题`;
         resultPoints.textContent = String(state.points);
         resultMinutes.textContent = `${tabletMinutes()} 分钟`;
 
         if (passed) {
-            resultTitle.textContent = alreadyCleared ? "再次通关！" : "本关通过！";
-            if (!alreadyCleared) {
-                state.points += POINT_PER_PASS;
-                state.cleared[levelIndex] = true;
-                if (levelIndex === state.unlocked && state.unlocked < LEVELS.length - 1) {
-                    state.unlocked += 1;
-                }
-                saveState();
-                updateStatsBar();
-                resultReward.innerHTML = `
-                    <p class="reward-gain">+${POINT_PER_PASS} 分</p>
-                    <p class="reward-time">兑换平板时间 +${MINUTES_PER_POINT} 分钟</p>
-                `;
-                burstFireworks(true);
-            } else {
-                resultReward.innerHTML = `<p class="reward-note">本关已经得过分啦，不再重复加分</p>`;
+            resultTitle.textContent = "本关通过！";
+            state.points += POINT_PER_PASS;
+            state.cleared[levelIndex] = true;
+            if (levelIndex === state.unlocked && state.unlocked < LEVELS.length - 1) {
+                state.unlocked += 1;
             }
+            saveState();
+            updateStatsBar();
+            resultReward.innerHTML = `
+                <p class="reward-gain">+${POINT_PER_PASS} 分</p>
+                <p class="reward-time">兑换平板时间 +${MINUTES_PER_POINT} 分钟</p>
+            `;
+            burstFireworks(true);
             resultPoints.textContent = String(state.points);
             resultMinutes.textContent = `${tabletMinutes()} 分钟`;
 
-            const hasNext = levelIndex < LEVELS.length - 1 && levelIndex + 1 <= state.unlocked;
+            const hasNext = levelIndex < LEVELS.length - 1 && levelIndex + 1 <= state.unlocked && !state.cleared[levelIndex + 1];
             nextBtn.classList.toggle("hidden", !hasNext);
             retryBtn.classList.add("hidden");
 
             if (Object.keys(state.cleared).length === LEVELS.length) {
                 resultTitle.textContent = "全部通关！";
-                resultReward.innerHTML += `<p class="reward-final">累计 ${state.points} 分 · 平板 ${tabletMinutes()} 分钟</p>`;
+                resultReward.innerHTML += `<p class="reward-final">累计 ${state.points} 分 · 平板 ${tabletMinutes()} 分钟。已完成关卡不可再答。</p>`;
+                nextBtn.classList.add("hidden");
             }
         } else {
             resultTitle.textContent = "未得分";
@@ -380,7 +382,7 @@
     }
 
     function startLevel(index) {
-        if (index > state.unlocked) return;
+        if (!ready || index > state.unlocked || state.cleared[index]) return;
         levelIndex = index;
         levelType = LEVELS[index].type;
         brandTitle.textContent = LEVELS[index].name;
@@ -464,11 +466,14 @@
 
     nextBtn.addEventListener("click", () => {
         const next = levelIndex + 1;
-        if (next <= state.unlocked && next < LEVELS.length) startLevel(next);
+        if (next <= state.unlocked && next < LEVELS.length && !state.cleared[next]) startLevel(next);
         else renderMap();
     });
 
-    retryBtn.addEventListener("click", () => startLevel(levelIndex));
+    retryBtn.addEventListener("click", () => {
+        if (!state.cleared[levelIndex]) startLevel(levelIndex);
+        else renderMap();
+    });
     homeBtn.addEventListener("click", renderMap);
 
     resetBtn.addEventListener("click", () => {
@@ -478,5 +483,22 @@
         renderMap();
     });
 
-    renderMap();
+    if (introEl) introEl.textContent = "正在加载题库…";
+
+    loadQuestionFiles()
+        .then(() => {
+            ready = true;
+            if (introEl) {
+                introEl.textContent =
+                    `共 ${LEVELS.length} 关。科学 ${SCIENCE_BANK.length} 题、英语 ${ENGLISH_BANK.length} 题。通关后的关卡不能再重新答题。`;
+            }
+            renderMap();
+        })
+        .catch((err) => {
+            console.error(err);
+            if (introEl) {
+                introEl.textContent =
+                    "题库加载失败。请用 Live Server 打开本文件夹后再试（不要直接双击 html）。详见 questions/如何增加题目.txt";
+            }
+        });
 })();

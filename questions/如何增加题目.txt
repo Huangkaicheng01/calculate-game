@@ -1,0 +1,20 @@
+如何增加题目
+============
+
+1. 科学题：编辑 questions/science.json，在 "questions" 数组里追加一条。
+2. 英语题：编辑 questions/english.json，同样追加一条。
+3. 关卡：编辑 questions/levels.json（建议最多 5 关）。
+
+题目格式示例：
+{
+  "prompt": "题目文字？",
+  "answer": "正确答案",
+  "options": ["选项A", "正确答案", "选项C", "选项D"]
+}
+
+注意：
+- answer 必须和 options 里某一项文字完全一样
+- 改完保存后刷新页面
+- 请用本地服务器打开（如 Cursor / VS Code 的 Live Server），不要直接双击 html，否则题库文件可能加载失败
+
+乘除法口算题由程序自动生成，无需写进题库文件。

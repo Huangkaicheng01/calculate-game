@@ -146,11 +146,17 @@ body {
 
 .level-btn.cleared {
     background: #e7f8ef;
+    opacity: 0.85;
+    cursor: not-allowed;
 }
 
 .level-btn.locked {
     opacity: 0.55;
     cursor: not-allowed;
+}
+
+.level-btn:disabled {
+    transform: none;
 }
 
 .level-num {
