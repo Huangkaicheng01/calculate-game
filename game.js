@@ -2,8 +2,8 @@
     const TOTAL = 5;
     const PASS_NEED = 4;
     const POINT_PER_PASS = 1;
-    const MINUTES_PER_POINT = 14;
-    const MAX_TABLET_MINUTES = 70;
+    const MINUTES_PER_POINT = 6;
+    const MAX_TABLET_MINUTES = 30;
     const MAX_LEVELS = 5;
     const STORAGE_KEY = "math-adventure-v3";
 
@@ -103,26 +103,16 @@
         return a;
     }
 
-    async function loadJson(path) {
-        const res = await fetch(path);
-        if (!res.ok) throw new Error(`无法读取 ${path}`);
-        return res.json();
-    }
+    function loadQuestionFiles() {
+        const data = window.QUESTION_DATA || {};
 
-    async function loadQuestionFiles() {
-        const [levelsData, scienceData, englishData] = await Promise.all([
-            loadJson("questions/levels.json"),
-            loadJson("questions/science.json"),
-            loadJson("questions/english.json"),
-        ]);
+        LEVELS = (data.levels || []).slice(0, MAX_LEVELS);
+        SCIENCE_BANK = data.science || [];
+        ENGLISH_BANK = data.english || [];
 
-        LEVELS = (levelsData.levels || []).slice(0, MAX_LEVELS);
-        SCIENCE_BANK = scienceData.questions || [];
-        ENGLISH_BANK = englishData.questions || [];
-
-        if (!LEVELS.length) throw new Error("levels.json 里还没有关卡");
-        if (!SCIENCE_BANK.length) throw new Error("science.json 里还没有题目");
-        if (!ENGLISH_BANK.length) throw new Error("english.json 里还没有题目");
+        if (!LEVELS.length) throw new Error("levels.js 里还没有关卡");
+        if (!SCIENCE_BANK.length) throw new Error("science.js 里还没有题目");
+        if (!ENGLISH_BANK.length) throw new Error("english.js 里还没有题目");
 
         if (state.unlocked > LEVELS.length - 1) {
             state.unlocked = LEVELS.length - 1;
@@ -483,22 +473,19 @@
         renderMap();
     });
 
-    if (introEl) introEl.textContent = "正在加载题库…";
-
-    loadQuestionFiles()
-        .then(() => {
-            ready = true;
-            if (introEl) {
-                introEl.textContent =
-                    `共 ${LEVELS.length} 关。科学 ${SCIENCE_BANK.length} 题、英语 ${ENGLISH_BANK.length} 题。通关后的关卡不能再重新答题。`;
-            }
-            renderMap();
-        })
-        .catch((err) => {
-            console.error(err);
-            if (introEl) {
-                introEl.textContent =
-                    "题库加载失败。请用 Live Server 打开本文件夹后再试（不要直接双击 html）。详见 questions/如何增加题目.txt";
-            }
-        });
+    try {
+        loadQuestionFiles();
+        ready = true;
+        if (introEl) {
+            introEl.textContent =
+                `共 ${LEVELS.length} 关。科学 ${SCIENCE_BANK.length} 题、英语 ${ENGLISH_BANK.length} 题。通关后的关卡不能再重新答题。`;
+        }
+        renderMap();
+    } catch (err) {
+        console.error(err);
+        if (introEl) {
+            introEl.textContent =
+                "题库加载失败：请确认 index.html 里已引入 questions 目录下的 levels.js、science.js、english.js。";
+        }
+    }
 })();

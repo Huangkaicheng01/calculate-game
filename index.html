@@ -15,7 +15,7 @@
     <main class="app">
         <header class="brand">
             <h1 id="brand-title">学科闯关赛</h1>
-            <p class="tagline">共 5 关 · 每关 5 题 · 答对 4 题得 1 分 · 满分共可领平板 70 分钟</p>
+            <p class="tagline">共 5 关 · 每关 5 题 · 答对 4 题得 1 分 · 满分共可领平板 30 分钟</p>
         </header>
 
         <div id="stats-bar" class="stats-bar">
@@ -30,7 +30,7 @@
         </div>
 
         <section id="map-screen" class="screen">
-            <p class="intro">共 5 关，闯过才能解锁下一关。答对至少 4 题得 1 分，每分可换 14 分钟平板，最多领取 70 分钟。</p>
+            <p class="intro">共 5 关，闯过才能解锁下一关。答对至少 4 题得 1 分，每分可换 6 分钟平板或者小度时间，最多领取 30 分钟。</p>
             <div id="level-list" class="level-list"></div>
             <button type="button" id="reset-btn" class="btn ghost reset-btn">重新开始闯关</button>
         </section>
@@ -72,6 +72,9 @@
         </section>
     </main>
 
+    <script src="questions/levels.js"></script>
+    <script src="questions/science.js"></script>
+    <script src="questions/english.js"></script>
     <script src="game.js"></script>
 </body>
 </html>
