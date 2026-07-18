@@ -240,7 +240,7 @@
     // ============ State ============
 
     function defaultState() {
-        return { points: 0, cleared: {}, levelResults: {}, lastSubmitDate: "", snakeAttempts: 0 };
+        return { points: 0, cleared: {}, levelResults: {}, lastSubmitDate: "" };
     }
 
     function loadState() {
@@ -252,7 +252,6 @@
                 cleared: typeof r.cleared === "object" ? r.cleared : {},
                 levelResults: typeof r.levelResults === "object" ? r.levelResults : {},
                 lastSubmitDate: typeof r.lastSubmitDate === "string" ? r.lastSubmitDate : "",
-                snakeAttempts: Number(r.snakeAttempts) || 0,
             };
         } catch { return defaultState(); }
     }
@@ -581,10 +580,11 @@
     const snakeScore = document.getElementById("snake-score");
     const snakeMsg = document.getElementById("snake-msg");
     const snakeSkip = document.getElementById("snake-skip");
+    const snakeRestart = document.getElementById("snake-restart");
     const GRID = 15, CELL = 20;
     let snake = [], snakeFood = [], snakeDir = [0, 1], snakeNextDir = [0, 1];
-    let snakeTimer = null, snakeGameScore = 0, snakeActive = false;
-    let snakeOnDone = null, snakeLimitless = false;
+    let snakeTimer = null, snakeGameScore = 0, snakeActive = false, snakeStarted = false;
+    let snakeOnDone = null, snakeLimitless = false, snakeRestarts = 0;
 
     function snakeRandFood() {
         let f;
@@ -628,58 +628,68 @@
     }
 
     function snakeGameOver() {
-        clearInterval(snakeTimer); snakeTimer = null; snakeActive = false;
+        clearInterval(snakeTimer); snakeTimer = null;
+        snakeActive = false; snakeStarted = false;
         snakeMsg.textContent = "游戏结束！得分：" + snakeGameScore + " 🐍";
         snakeMsg.style.color = "#e85d4c";
-        snakeSkip.textContent = "返回继续做题";
+        snakeSkip.classList.remove("hidden");
+
+        if (!snakeLimitless && snakeRestarts < 2 && snakeOnDone) {
+            snakeRestart.classList.remove("hidden");
+            snakeRestart.textContent = "🔄 重新开始（还可玩 " + (2 - snakeRestarts) + " 次）";
+        } else {
+            snakeRestart.classList.add("hidden");
+        }
     }
 
     function snakeEnd() {
-        clearInterval(snakeTimer); snakeTimer = null; snakeActive = false;
+        clearInterval(snakeTimer); snakeTimer = null;
+        snakeActive = false; snakeStarted = false;
         snakeOverlay.classList.add("hidden");
-        document.removeEventListener("keydown", snakeKeyHandler);
         if (snakeOnDone) { const cb = snakeOnDone; snakeOnDone = null; cb(); }
     }
 
     function snakeKeyHandler(e) {
         if (!snakeActive) return;
-        const d = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] }[e.key];
-        if (d && (d[0] !== -snakeDir[0] || d[1] !== -snakeDir[1])) snakeNextDir = d;
-        e.preventDefault();
+        const d = { ArrowUp: [0, -1], ArrowDown: [0, 1], ArrowLeft: [-1, 0], ArrowRight: [1, 0] }[e.key];
+        if (d && (d[0] !== -snakeDir[0] || d[1] !== -snakeDir[1])) {
+            snakeNextDir = d;
+            e.preventDefault();
+        }
     }
 
     function snakeCountdown(count, cb) {
         snakeMsg.textContent = count + "...";
+        snakeMsg.style.color = "#e85d4c";
         if (count > 1) setTimeout(() => snakeCountdown(count - 1, cb), 800);
-        else setTimeout(() => { snakeMsg.textContent = ""; cb(); }, 600);
+        else setTimeout(cb, 600);
+    }
+
+    function snakeGameInit() {
+        snake = [[7, 7], [6, 7], [5, 7]];
+        snakeDir = [1, 0]; snakeNextDir = [1, 0];
+        snakeGameScore = 0; snakeActive = false; snakeStarted = false;
+        snakeFood = snakeRandFood();
+        snakeScore.textContent = "得分：0";
+        snakeMsg.style.color = "#e85d4c";
     }
 
     function startSnakeGame(onDone, limitless) {
-        // Track attempts (only when not limitless)
-        if (!limitless) {
-            if (!state.snakeAttempts) state.snakeAttempts = 0;
-            if (state.snakeAttempts >= 3) { onDone(); return; }
-            state.snakeAttempts++;
-            saveState();
-        }
         snakeOnDone = onDone; snakeLimitless = !!limitless;
-        snake = [[7, 7], [7, 6], [7, 5]];
-        snakeDir = [0, 1]; snakeNextDir = [0, 1];
-        snakeGameScore = 0; snakeActive = false;
-        snakeFood = snakeRandFood();
-        snakeScore.textContent = "得分：0";
+        if (!snakeLimitless && !snakeRestarts) snakeRestarts = 0;
+        snakeGameInit();
         snakeMsg.textContent = "做题做累了吧，玩个游戏放松一下~";
-        snakeMsg.style.color = "#e85d4c";
         snakeSkip.textContent = "跳过游戏，继续做题";
+        snakeSkip.classList.remove("hidden");
+        snakeRestart.classList.add("hidden");
         snakeOverlay.classList.remove("hidden");
         snakeDraw();
-        // 3-second countdown then start
+        // Countdown then start
         snakeCountdown(3, () => {
-            snakeActive = true;
+            snakeActive = true; snakeStarted = true;
             snakeMsg.textContent = "开始！";
             snakeMsg.style.color = "#3aad7a";
             snakeTimer = setInterval(snakeTick, 150);
-            document.addEventListener("keydown", snakeKeyHandler);
         });
     }
 
@@ -687,12 +697,27 @@
     document.querySelectorAll(".snake-dir").forEach((btn) => {
         btn.addEventListener("click", () => {
             if (!snakeActive) return;
-            const d = { up: [-1, 0], down: [1, 0], left: [0, -1], right: [0, 1] }[btn.dataset.dir];
+            const d = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[btn.dataset.dir];
             if (d && (d[0] !== -snakeDir[0] || d[1] !== -snakeDir[1])) snakeNextDir = d;
         });
     });
 
     snakeSkip.addEventListener("click", snakeEnd);
+
+    snakeRestart.addEventListener("click", () => {
+        snakeRestarts++;
+        snakeGameInit();
+        snakeMsg.textContent = "做题做累了吧，玩个游戏放松一下~";
+        snakeSkip.classList.remove("hidden");
+        snakeRestart.classList.add("hidden");
+        snakeDraw();
+        snakeCountdown(3, () => {
+            snakeActive = true; snakeStarted = true;
+            snakeMsg.textContent = "开始！";
+            snakeMsg.style.color = "#3aad7a";
+            snakeTimer = setInterval(snakeTick, 150);
+        });
+    });
 
     // Title triple-click easter egg
     let titleClicks = 0, titleTimer = null;
@@ -701,11 +726,15 @@
         clearTimeout(titleTimer);
         if (titleClicks >= 3) {
             titleClicks = 0;
-            startSnakeGame(null, true); // limitless mode, no callback
+            snakeRestarts = 0;
+            startSnakeGame(null, true);
         } else {
             titleTimer = setTimeout(() => { titleClicks = 0; }, 800);
         }
     });
+
+    // Always-on keydown listener (only processes when snakeActive)
+    document.addEventListener("keydown", snakeKeyHandler);
 
     // ============ Fireworks ============
 
