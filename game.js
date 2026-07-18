@@ -611,18 +611,23 @@
         snakeOnDone = onDone; snakeLimitless = !!limitless;
         if (!snakeLimitless && !snakeRestarts) snakeRestarts = 0;
         snakeGameInit();
-        snakeMsg.textContent = "做题做累了吧，玩个游戏放松一下~";
-        snakeSkip.textContent = "跳过游戏，继续做题";
-        snakeSkip.classList.remove("hidden");
+        snakeMsg.textContent = "是不是做题辛苦啦，来玩一局游戏放松放松你的小脑袋先~~";
+        snakeMsg.style.color = "#c94436";
+        snakeSkip.classList.add("hidden");
         snakeRestart.classList.add("hidden");
         snakeOverlay.classList.remove("hidden");
         snakeDraw();
-        // Countdown then start
-        snakeCountdown(3, () => {
-            snakeActive = true; snakeStarted = true;
-            snakeMsg.textContent = "开始！";
-            snakeMsg.style.color = "#3aad7a";
-            snakeTimer = setInterval(snakeTick, 300);
+        // Welcome message 2s → countdown
+        setTimeout(() => {
+            snakeMsg.textContent = "3...";
+            snakeMsg.style.color = "#e85d4c";
+            snakeSkip.classList.remove("hidden");
+            snakeCountdown(3, () => {
+                snakeActive = true; snakeStarted = true;
+                snakeMsg.textContent = "开始！";
+                snakeMsg.style.color = "#3aad7a";
+                snakeTimer = setInterval(snakeTick, 300);
+            });
         });
     }
 
@@ -659,15 +664,21 @@
     snakeRestart.addEventListener("click", () => {
         snakeRestarts++;
         snakeGameInit();
-        snakeMsg.textContent = "做题做累了吧，玩个游戏放松一下~";
-        snakeSkip.classList.remove("hidden");
+        snakeMsg.textContent = "是不是做题辛苦啦，来玩一局游戏放松放松你的小脑袋先~~";
+        snakeMsg.style.color = "#c94436";
+        snakeSkip.classList.add("hidden");
         snakeRestart.classList.add("hidden");
         snakeDraw();
-        snakeCountdown(3, () => {
-            snakeActive = true; snakeStarted = true;
-            snakeMsg.textContent = "开始！";
-            snakeMsg.style.color = "#3aad7a";
-            snakeTimer = setInterval(snakeTick, 300);
+        setTimeout(() => {
+            snakeMsg.textContent = "3...";
+            snakeMsg.style.color = "#e85d4c";
+            snakeSkip.classList.remove("hidden");
+            snakeCountdown(3, () => {
+                snakeActive = true; snakeStarted = true;
+                snakeMsg.textContent = "开始！";
+                snakeMsg.style.color = "#3aad7a";
+                snakeTimer = setInterval(snakeTick, 300);
+            });
         });
     });
 
