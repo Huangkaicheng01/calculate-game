@@ -698,7 +698,7 @@
                 snakeMsg.style.color = "#3aad7a";
                 snakeTimer = setInterval(snakeTick, 300);
             });
-        });
+        }, 3000);
     });
 
     // Title triple-click easter egg
