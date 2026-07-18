@@ -611,17 +611,26 @@
         snakeOnDone = onDone; snakeLimitless = !!limitless;
         if (!snakeLimitless && !snakeRestarts) snakeRestarts = 0;
         snakeGameInit();
+        // Welcome phase: only show message, hide everything else
         snakeMsg.textContent = "是不是做题辛苦啦，来玩一局游戏放松放松你的小脑袋先~~";
         snakeMsg.style.color = "#c94436";
+        snakeMsg.style.fontSize = "1.3rem";
+        snakeCanvas.classList.add("hidden");
+        snakeScore.classList.add("hidden");
+        document.querySelector(".snake-controls").classList.add("hidden");
         snakeSkip.classList.add("hidden");
         snakeRestart.classList.add("hidden");
         snakeOverlay.classList.remove("hidden");
-        snakeDraw();
-        // Welcome message 2s → countdown
+        // After 3s → show game + countdown
         setTimeout(() => {
             snakeMsg.textContent = "3...";
             snakeMsg.style.color = "#e85d4c";
+            snakeMsg.style.fontSize = "";
+            snakeCanvas.classList.remove("hidden");
+            snakeScore.classList.remove("hidden");
+            document.querySelector(".snake-controls").classList.remove("hidden");
             snakeSkip.classList.remove("hidden");
+            snakeDraw();
             snakeCountdown(3, () => {
                 snakeActive = true; snakeStarted = true;
                 snakeMsg.textContent = "开始！";
@@ -664,15 +673,25 @@
     snakeRestart.addEventListener("click", () => {
         snakeRestarts++;
         snakeGameInit();
+        // Welcome phase
         snakeMsg.textContent = "是不是做题辛苦啦，来玩一局游戏放松放松你的小脑袋先~~";
         snakeMsg.style.color = "#c94436";
+        snakeMsg.style.fontSize = "1.3rem";
+        snakeCanvas.classList.add("hidden");
+        snakeScore.classList.add("hidden");
+        document.querySelector(".snake-controls").classList.add("hidden");
         snakeSkip.classList.add("hidden");
         snakeRestart.classList.add("hidden");
-        snakeDraw();
+        snakeOverlay.classList.remove("hidden");
         setTimeout(() => {
             snakeMsg.textContent = "3...";
             snakeMsg.style.color = "#e85d4c";
+            snakeMsg.style.fontSize = "";
+            snakeCanvas.classList.remove("hidden");
+            snakeScore.classList.remove("hidden");
+            document.querySelector(".snake-controls").classList.remove("hidden");
             snakeSkip.classList.remove("hidden");
+            snakeDraw();
             snakeCountdown(3, () => {
                 snakeActive = true; snakeStarted = true;
                 snakeMsg.textContent = "开始！";
