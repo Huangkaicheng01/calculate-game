@@ -400,8 +400,11 @@
         resultPoints.textContent = String(state.points);
         resultMinutes.textContent = tabletMinutes() + " 分钟";
 
-        // Always show email button
-        updateSendBtn();
+        const allCleared = Object.keys(state.cleared).length === LEVELS.length;
+        // Email button only when all 6 levels cleared
+        const emailArea = document.querySelector(".email-send-area");
+        emailArea.classList.toggle("hidden", !allCleared);
+        if (allCleared) updateSendBtn();
 
         const hasNext = LEVELS.some((_, i) => i > levelIndex && !state.cleared[i]);
         nextBtn.classList.toggle("hidden", !hasNext);
