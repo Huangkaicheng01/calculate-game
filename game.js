@@ -740,24 +740,20 @@
         });
     }
 
-    // Debug mode: 5 rapid clicks on score area unlocks all levels
+    // Debug mode: 5 rapid clicks on score area → clear first 5 levels, leave level 6 playable
     let debugClicks = 0, debugTimer = null;
     statPoints.parentElement.addEventListener("click", () => {
         debugClicks++;
         clearTimeout(debugTimer);
         if (debugClicks >= 5) {
             debugClicks = 0;
-            for (let i = 0; i < LEVELS.length; i++) {
+            // Clear first 5 levels, leave level 6 (collection) clickable
+            for (let i = 0; i < LEVELS.length - 1; i++) {
                 state.cleared[i] = true;
-                state.points = Math.min(i + 1, 6);
-                state.levelResults[i] = LEVELS[i].type === "collection"
-                    ? { type: "collection", itemCount: 3, passed: true }
-                    : { type: LEVELS[i].type, correct: 5, total: 5, passed: true };
+                state.levelResults[i] = { type: LEVELS[i].type, correct: 5, total: 5, passed: true };
             }
-            state.points = 6;
-            saveState(); updateStatsBar();
-            // Auto-jump to collection level (index 5)
-            startLevel(5);
+            state.points = 5;
+            saveState(); updateStatsBar(); renderMap();
         } else {
             debugTimer = setTimeout(() => { debugClicks = 0; }, 800);
         }
