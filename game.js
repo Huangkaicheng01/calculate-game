@@ -527,25 +527,30 @@
         cameraInput.value = "";
     }
 
-    function getSupportedMimeType() {
-        for (const t of ["audio/mp4", "audio/webm", "audio/ogg", "audio/wav"])
-            if (MediaRecorder.isTypeSupported(t)) return t;
-        return "audio/mp4";
-    }
-
     async function handleRecordClick() {
         if (isRecording) { stopRecording(); return; }
         if (!navigator.mediaDevices?.getUserMedia) {
-            recordingStatus.textContent = "浏览器不支持录音，请使用 Safari 或 Chrome";
+            recordingStatus.textContent = "浏览器不支持录音";
             return;
         }
+        recordingStatus.textContent = "正在请求麦克风权限...";
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            audioChunks = []; const mt = getSupportedMimeType();
-            mediaRecorder = new MediaRecorder(stream, { mimeType: mt });
+            audioChunks = [];
+            let opts = {};
+            const types = ["audio/webm", "audio/mp4", "audio/ogg", "audio/wav", ""];
+            for (const t of types) {
+                if (!t || MediaRecorder.isTypeSupported(t)) {
+                    opts = t ? { mimeType: t } : {};
+                    break;
+                }
+            }
+            recordingStatus.textContent = "🔴 正在录音中...";
+            mediaRecorder = new MediaRecorder(stream, opts);
             mediaRecorder.ondataavailable = (e) => { if (e.data.size) audioChunks.push(e.data); };
             mediaRecorder.onstop = async () => {
-                const blob = new Blob(audioChunks, { type: mt });
+                const actualType = mediaRecorder.mimeType || "audio/webm";
+                const blob = new Blob(audioChunks, { type: actualType });
                 try {
                     const dbId = await idbAdd(blob, "audio");
                     collectedItems.push({ id: collectedItems.length, type: "audio", data: URL.createObjectURL(blob), dbId });
@@ -553,13 +558,22 @@
                 } catch { collectionFeedback.textContent = "保存失败"; collectionFeedback.className = "feedback bad"; }
                 stream.getTracks().forEach((t) => t.stop()); recordingStatus.textContent = "";
             };
-            mediaRecorder.onerror = () => { recordingStatus.textContent = "录音出错，请重试"; stopRecording(); };
-            mediaRecorder.start();
+            mediaRecorder.onerror = (e) => {
+                console.error("MediaRecorder error:", e);
+                recordingStatus.textContent = "录音出错，请重试";
+                stopRecording();
+            };
+            mediaRecorder.start(1000);
             isRecording = true;
-            recordBtn.classList.add("recording"); recordBtnText.textContent = "停止录音"; recordingStatus.textContent = "🔴 正在录音中...";
+            recordBtn.classList.add("recording"); recordBtnText.textContent = "停止录音";
         } catch (err) {
             console.error("录音错误:", err.name, err.message);
-            recordingStatus.textContent = "请允许麦克风权限后重试";
+            if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError")
+                recordingStatus.textContent = "请在浏览器设置中允许麦克风权限";
+            else if (err.name === "NotFoundError")
+                recordingStatus.textContent = "未检测到麦克风设备";
+            else
+                recordingStatus.textContent = "录音失败：" + (err.message || "未知错误");
         }
     }
 
