@@ -205,8 +205,12 @@
                 audio_count: String(audios.length),
             };
             for (let i = 0; i < photos.length; i++) params["photo_" + (i + 1)] = photos[i];
-            // Audio blobs as attachments — EmailJS sends them as downloadable files
-            for (let i = 0; i < Math.min(audios.length, 5); i++) params["audio_" + (i + 1)] = audios[i].blob;
+            // Audio as File objects — EmailJS needs a name to recognize as attachment
+            for (let i = 0; i < Math.min(audios.length, 5); i++) {
+                const b = audios[i].blob;
+                const ext = b.type.includes("webm") ? "webm" : b.type.includes("mp4") ? "m4a" : "ogg";
+                params["audio_" + (i + 1)] = new File([b], "录音_" + (i + 1) + "." + ext, { type: b.type });
+            }
 
             const resp = await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params);
             if (resp.status === 200) {
