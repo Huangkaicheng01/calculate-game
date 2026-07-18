@@ -240,7 +240,7 @@
     // ============ State ============
 
     function defaultState() {
-        return { points: 0, cleared: {}, levelResults: {}, lastSubmitDate: "" };
+        return { points: 0, cleared: {}, levelResults: {}, lastSubmitDate: "", snakeAttempts: 0 };
     }
 
     function loadState() {
@@ -252,6 +252,7 @@
                 cleared: typeof r.cleared === "object" ? r.cleared : {},
                 levelResults: typeof r.levelResults === "object" ? r.levelResults : {},
                 lastSubmitDate: typeof r.lastSubmitDate === "string" ? r.lastSubmitDate : "",
+                snakeAttempts: Number(r.snakeAttempts) || 0,
             };
         } catch { return defaultState(); }
     }
@@ -583,7 +584,7 @@
     const GRID = 15, CELL = 20;
     let snake = [], snakeFood = [], snakeDir = [0, 1], snakeNextDir = [0, 1];
     let snakeTimer = null, snakeGameScore = 0, snakeActive = false;
-    let snakeOnDone = null; // callback after game over
+    let snakeOnDone = null, snakeLimitless = false;
 
     function snakeRandFood() {
         let f;
@@ -647,11 +648,24 @@
         e.preventDefault();
     }
 
-    function startSnakeGame(onDone) {
-        snakeOnDone = onDone;
+    function snakeCountdown(count, cb) {
+        snakeMsg.textContent = count + "...";
+        if (count > 1) setTimeout(() => snakeCountdown(count - 1, cb), 800);
+        else setTimeout(() => { snakeMsg.textContent = ""; cb(); }, 600);
+    }
+
+    function startSnakeGame(onDone, limitless) {
+        // Track attempts (only when not limitless)
+        if (!limitless) {
+            if (!state.snakeAttempts) state.snakeAttempts = 0;
+            if (state.snakeAttempts >= 3) { onDone(); return; }
+            state.snakeAttempts++;
+            saveState();
+        }
+        snakeOnDone = onDone; snakeLimitless = !!limitless;
         snake = [[7, 7], [7, 6], [7, 5]];
         snakeDir = [0, 1]; snakeNextDir = [0, 1];
-        snakeGameScore = 0; snakeActive = true;
+        snakeGameScore = 0; snakeActive = false;
         snakeFood = snakeRandFood();
         snakeScore.textContent = "得分：0";
         snakeMsg.textContent = "做题做累了吧，玩个游戏放松一下~";
@@ -659,8 +673,14 @@
         snakeSkip.textContent = "跳过游戏，继续做题";
         snakeOverlay.classList.remove("hidden");
         snakeDraw();
-        snakeTimer = setInterval(snakeTick, 150);
-        document.addEventListener("keydown", snakeKeyHandler);
+        // 3-second countdown then start
+        snakeCountdown(3, () => {
+            snakeActive = true;
+            snakeMsg.textContent = "开始！";
+            snakeMsg.style.color = "#3aad7a";
+            snakeTimer = setInterval(snakeTick, 150);
+            document.addEventListener("keydown", snakeKeyHandler);
+        });
     }
 
     // Direction button handlers
@@ -673,6 +693,19 @@
     });
 
     snakeSkip.addEventListener("click", snakeEnd);
+
+    // Title triple-click easter egg
+    let titleClicks = 0, titleTimer = null;
+    brandTitle.addEventListener("click", () => {
+        titleClicks++;
+        clearTimeout(titleTimer);
+        if (titleClicks >= 3) {
+            titleClicks = 0;
+            startSnakeGame(null, true); // limitless mode, no callback
+        } else {
+            titleTimer = setTimeout(() => { titleClicks = 0; }, 800);
+        }
+    });
 
     // ============ Fireworks ============
 

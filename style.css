@@ -54,6 +54,8 @@ body {
     color: var(--coral-deep);
     text-shadow: 0 3px 0 rgba(255, 248, 240, 0.7);
     animation: float-title 2.4s ease-in-out infinite alternate;
+    cursor: default;
+    user-select: none;
 }
 
 .today-date {
