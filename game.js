@@ -444,8 +444,8 @@
                 '<p class="reward-note">再试一次，争取通关！</p>';
         }
 
-        // Snake game easter egg after level 3 (index 2)
-        if (passed && levelIndex === 2) {
+        // Snake game easter egg after level 2 (index 1)
+        if (passed && levelIndex === 1) {
             startSnakeGame(() => showResultScreen());
         } else {
             showResultScreen();
@@ -692,7 +692,7 @@
             snakeActive = true; snakeStarted = true;
             snakeMsg.textContent = "开始！";
             snakeMsg.style.color = "#3aad7a";
-            snakeTimer = setInterval(snakeTick, 200);
+            snakeTimer = setInterval(snakeTick, 300);
         });
     }
 
@@ -718,7 +718,7 @@
             snakeActive = true; snakeStarted = true;
             snakeMsg.textContent = "开始！";
             snakeMsg.style.color = "#3aad7a";
-            snakeTimer = setInterval(snakeTick, 200);
+            snakeTimer = setInterval(snakeTick, 300);
         });
     });
 
