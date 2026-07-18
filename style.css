@@ -719,3 +719,53 @@ body {
 .email-status.error {
     color: var(--coral-deep);
 }
+
+/* Snake game overlay */
+.snake-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 20;
+    animation: fade-in 0.3s ease;
+}
+.snake-modal {
+    background: var(--cream);
+    border-radius: 20px; padding: 1.25rem;
+    width: min(340px, 92vw);
+    text-align: center;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+}
+.snake-msg {
+    font-family: "ZCOOL KuaiLe", cursive;
+    font-size: 1.2rem; color: var(--coral-deep);
+    margin-bottom: 0.75rem;
+}
+#snake-canvas {
+    border: 3px solid var(--coral);
+    border-radius: 12px;
+    background: #1a1a2e;
+    display: block; margin: 0 auto;
+    max-width: 100%; height: auto;
+}
+.snake-score {
+    font-family: "ZCOOL KuaiLe", cursive;
+    font-size: 1.3rem; margin: 0.5rem 0;
+    color: var(--mint);
+}
+.snake-controls {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 6px; margin: 0.5rem 0;
+}
+.snake-mid { display: flex; gap: 40px; }
+.snake-dir {
+    appearance: none; border: none;
+    background: var(--coral);
+    color: #fff; font-size: 1.5rem;
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--coral-deep);
+    transition: transform 0.1s;
+}
+.snake-dir:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--coral-deep); }
+#snake-skip { margin-top: 0.5rem; font-size: 0.95rem; }

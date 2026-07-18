@@ -443,7 +443,13 @@
             resultReward.innerHTML = '<p class="reward-fail">答对不足 ' + PASS_NEED + ' 题，不能得分</p>' +
                 '<p class="reward-note">再试一次，争取通关！</p>';
         }
-        showResultScreen();
+
+        // Snake game easter egg after level 3 (index 2)
+        if (passed && levelIndex === 2) {
+            startSnakeGame(() => showResultScreen());
+        } else {
+            showResultScreen();
+        }
     }
 
     // ============ Collection ============
@@ -565,6 +571,108 @@
         questions = makeQuestions(levelType); qIndex = 0; correctCount = 0;
         showScreen(quizScreen); renderQuestion();
     }
+
+    // ============ Snake Game ============
+
+    const snakeOverlay = document.getElementById("snake-overlay");
+    const snakeCanvas = document.getElementById("snake-canvas");
+    const snakeCtx = snakeCanvas.getContext("2d");
+    const snakeScore = document.getElementById("snake-score");
+    const snakeMsg = document.getElementById("snake-msg");
+    const snakeSkip = document.getElementById("snake-skip");
+    const GRID = 15, CELL = 20;
+    let snake = [], snakeFood = [], snakeDir = [0, 1], snakeNextDir = [0, 1];
+    let snakeTimer = null, snakeGameScore = 0, snakeActive = false;
+    let snakeOnDone = null; // callback after game over
+
+    function snakeRandFood() {
+        let f;
+        do { f = [rand(0, GRID - 1), rand(0, GRID - 1)]; }
+        while (snake.some(([x, y]) => x === f[0] && y === f[1]));
+        return f;
+    }
+
+    function snakeDraw() {
+        snakeCtx.clearRect(0, 0, GRID * CELL, GRID * CELL);
+        // Food
+        snakeCtx.fillStyle = "#ff6b6b";
+        snakeCtx.fillRect(snakeFood[0] * CELL, snakeFood[1] * CELL, CELL - 1, CELL - 1);
+        // Snake
+        snake.forEach(([x, y], i) => {
+            snakeCtx.fillStyle = i === 0 ? "#5fd4a8" : "#3aad7a";
+            snakeCtx.fillRect(x * CELL, y * CELL, CELL - 1, CELL - 1);
+        });
+    }
+
+    function snakeTick() {
+        snakeDir = snakeNextDir;
+        const head = snake[0];
+        const nx = head[0] + snakeDir[0], ny = head[1] + snakeDir[1];
+
+        // Wall or self collision
+        if (nx < 0 || nx >= GRID || ny < 0 || ny >= GRID || snake.some(([x, y]) => x === nx && y === ny)) {
+            snakeGameOver();
+            return;
+        }
+
+        snake.unshift([nx, ny]);
+        if (nx === snakeFood[0] && ny === snakeFood[1]) {
+            snakeGameScore++;
+            snakeScore.textContent = "得分：" + snakeGameScore;
+            snakeFood = snakeRandFood();
+        } else {
+            snake.pop();
+        }
+        snakeDraw();
+    }
+
+    function snakeGameOver() {
+        clearInterval(snakeTimer); snakeTimer = null; snakeActive = false;
+        snakeMsg.textContent = "游戏结束！得分：" + snakeGameScore + " 🐍";
+        snakeMsg.style.color = "#e85d4c";
+        snakeSkip.textContent = "返回继续做题";
+    }
+
+    function snakeEnd() {
+        clearInterval(snakeTimer); snakeTimer = null; snakeActive = false;
+        snakeOverlay.classList.add("hidden");
+        document.removeEventListener("keydown", snakeKeyHandler);
+        if (snakeOnDone) { const cb = snakeOnDone; snakeOnDone = null; cb(); }
+    }
+
+    function snakeKeyHandler(e) {
+        if (!snakeActive) return;
+        const d = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] }[e.key];
+        if (d && (d[0] !== -snakeDir[0] || d[1] !== -snakeDir[1])) snakeNextDir = d;
+        e.preventDefault();
+    }
+
+    function startSnakeGame(onDone) {
+        snakeOnDone = onDone;
+        snake = [[7, 7], [7, 6], [7, 5]];
+        snakeDir = [0, 1]; snakeNextDir = [0, 1];
+        snakeGameScore = 0; snakeActive = true;
+        snakeFood = snakeRandFood();
+        snakeScore.textContent = "得分：0";
+        snakeMsg.textContent = "做题做累了吧，玩个游戏放松一下~";
+        snakeMsg.style.color = "#e85d4c";
+        snakeSkip.textContent = "跳过游戏，继续做题";
+        snakeOverlay.classList.remove("hidden");
+        snakeDraw();
+        snakeTimer = setInterval(snakeTick, 150);
+        document.addEventListener("keydown", snakeKeyHandler);
+    }
+
+    // Direction button handlers
+    document.querySelectorAll(".snake-dir").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            if (!snakeActive) return;
+            const d = { up: [-1, 0], down: [1, 0], left: [0, -1], right: [0, 1] }[btn.dataset.dir];
+            if (d && (d[0] !== -snakeDir[0] || d[1] !== -snakeDir[1])) snakeNextDir = d;
+        });
+    });
+
+    snakeSkip.addEventListener("click", snakeEnd);
 
     // ============ Fireworks ============
 

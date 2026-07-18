@@ -107,6 +107,23 @@
         </section>
     </main>
 
+    <div id="snake-overlay" class="snake-overlay hidden">
+        <div class="snake-modal">
+            <p id="snake-msg" class="snake-msg">做题做累了吧，玩个游戏放松一下~</p>
+            <canvas id="snake-canvas" width="300" height="300"></canvas>
+            <p id="snake-score" class="snake-score">得分：0</p>
+            <div class="snake-controls">
+                <button type="button" class="snake-dir" data-dir="up">↑</button>
+                <div class="snake-mid">
+                    <button type="button" class="snake-dir" data-dir="left">←</button>
+                    <button type="button" class="snake-dir" data-dir="right">→</button>
+                </div>
+                <button type="button" class="snake-dir" data-dir="down">↓</button>
+            </div>
+            <button type="button" id="snake-skip" class="btn ghost">跳过游戏，继续做题</button>
+        </div>
+    </div>
+
     <script src="questions/levels.js"></script>
     <script src="questions/science.js"></script>
     <script src="questions/english.js"></script>
