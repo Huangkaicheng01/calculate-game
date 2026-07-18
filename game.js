@@ -637,7 +637,7 @@
                 snakeMsg.style.color = "#3aad7a";
                 snakeTimer = setInterval(snakeTick, 300);
             });
-        });
+        },3000);
     }
 
     // Debug mode: 5 rapid clicks on score area → clear first 5 levels, leave level 6 playable
