@@ -452,9 +452,16 @@ body {
     gap: 0.5rem;
 }
 
-.email-send-area .btn.full-width {
+.email-send-area .btn.full-width,
+.email-send-collection .btn.full-width {
     width: 100%;
     display: block;
+}
+
+.email-send-collection {
+    margin-top: 1rem;
+    display: grid;
+    gap: 0.5rem;
 }
 
 .result-score {
@@ -498,6 +505,14 @@ body {
 /* 收集关卡 */
 .collection-progress {
     margin-bottom: 1.5rem;
+}
+
+.collection-hint {
+    font-family: "ZCOOL KuaiLe", cursive;
+    font-size: 1.05rem;
+    color: var(--coral-deep);
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
 }
 
 .collection-progress span {

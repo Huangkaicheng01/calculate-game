@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=Nunito:wght@600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#e85d4c">
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
@@ -17,7 +19,7 @@
         <header class="brand">
             <h1 id="brand-title">学科闯关赛</h1>
             <p id="today-date" class="today-date"></p>
-            <p class="tagline">共 6 关 · 自由选择关卡 · 每关通关得 1 分 · 满分共可领平板 30 分钟</p>
+            <p class="tagline">共 5 关计分 · 自由选择关卡 · 每关通关得 1 分 · 满分共可领平板 30 分钟 · 第 6 关为录音练习关</p>
         </header>
 
         <div id="stats-bar" class="stats-bar">
@@ -81,28 +83,14 @@
         </section>
 
         <section id="collection-screen" class="screen hidden">
-            <div class="collection-progress">
-                <span id="collection-progress-text">已收集 0 / 3 条好词好句</span>
-                <div class="progress-bar"><div id="collection-progress-fill"></div></div>
-            </div>
-            <div class="collection-actions">
-                <button type="button" id="camera-btn" class="btn collection-action-btn">
-                    <span class="action-icon">📷</span>
-                    <span>拍照记录</span>
-                </button>
-                <button type="button" id="record-btn" class="btn collection-action-btn">
-                    <span class="action-icon">🎙️</span>
-                    <span id="record-btn-text">开始录音</span>
-                </button>
-                <input type="file" id="camera-input" accept="image/*" capture="environment" class="hidden">
-            </div>
-            <p id="recording-status" class="recording-status" aria-live="polite"></p>
-            <audio id="audio-preview" class="hidden" controls></audio>
-            <div id="collection-list" class="collection-list"></div>
-            <p id="collection-feedback" class="feedback" aria-live="polite"></p>
+            <p class="collection-hint">请用你的小天才儿童手表给我发送好词好句的录音~</p>
             <div class="collection-submit-area">
-                <button type="button" id="collection-submit-btn" class="btn primary" disabled>提交收集（需至少 3 条）</button>
+                <button type="button" id="collection-submit-btn" class="btn primary">我已经发给爸爸了</button>
                 <button type="button" id="collection-back-btn" class="btn ghost">返回地图</button>
+            </div>
+            <div class="email-send-collection hidden" id="email-send-collection">
+                <button type="button" id="send-email-collection-btn" class="btn primary full-width">📧 发送报告到邮箱</button>
+                <p id="collection-email-status" class="email-status"></p>
             </div>
         </section>
     </main>

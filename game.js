@@ -16,7 +16,7 @@
         "div-3x1": "三位数 ÷ 一位数 · 填空",
         "div-3x2": "三位数 ÷ 两位数 · 填空",
         science: "科学常识 · 选择题", english: "英语单词 · 选择题",
-        collection: "拍照或录音 · 好词好句",
+        collection: "📻 小天才录音 · 发送好词好句",
     };
 
     let LEVELS = [], SCIENCE_BANK = [], ENGLISH_BANK = [];
@@ -38,18 +38,15 @@
     const introEl = document.querySelector("#map-screen .intro");
     const canvas = $("fireworks"), ctx = canvas.getContext("2d");
 
-    const cameraBtn = $("camera-btn"), recordBtn = $("record-btn"), recordBtnText = $("record-btn-text");
-    const cameraInput = $("camera-input"), recordingStatus = $("recording-status");
-    const audioPreview = $("audio-preview"), collectionList = $("collection-list");
-    const collectionFeedback = $("collection-feedback"), collectionProgressText = $("collection-progress-text");
-    const collectionProgressFill = $("collection-progress-fill");
     const collectionSubmitBtn = $("collection-submit-btn"), collectionBackBtn = $("collection-back-btn");
+    const collectionEmailArea = $("email-send-collection");
+    const sendEmailCollectionBtn = $("send-email-collection-btn");
+    const collectionEmailStatus = $("collection-email-status");
 
     let state = loadState();
     let levelIndex = 0, levelType = "", questions = [];
     let qIndex = 0, correctCount = 0, locked = false;
     let particles = [], animId = null, ready = false, idb = null;
-    let collectedItems = [], mediaRecorder = null, audioChunks = [], isRecording = false;
 
     // ============ IndexedDB ============
 
@@ -239,15 +236,20 @@
                 state.lastSubmitDate = tk;
                 saveState();
                 updateSendBtn();
-                emailSendStatus.textContent = "已发送到 " + RECIPIENT + " 📬";
-                emailSendStatus.className = "email-status success";
+                const msg = "已发送到 " + RECIPIENT + " 📬";
+                emailSendStatus.textContent = msg; emailSendStatus.className = "email-status success";
                 sendEmailBtn.textContent = "✅ 今日已发送";
+                // Also update collection screen status if visible
+                collectionEmailStatus.textContent = msg; collectionEmailStatus.className = "email-status success";
+                sendEmailCollectionBtn.textContent = "✅ 今日已发送"; sendEmailCollectionBtn.disabled = true;
             } else throw new Error("Status " + resp.status);
         } catch (err) {
             console.error("Email:", err);
-            emailSendStatus.textContent = "发送失败：" + (err.message || "请检查网络");
-            emailSendStatus.className = "email-status error";
+            const msg = "发送失败：" + (err.message || "请检查网络");
+            emailSendStatus.textContent = msg; emailSendStatus.className = "email-status error";
             sendEmailBtn.disabled = false; sendEmailBtn.textContent = "📧 重试发送";
+            collectionEmailStatus.textContent = msg; collectionEmailStatus.className = "email-status error";
+            sendEmailCollectionBtn.disabled = false; sendEmailCollectionBtn.textContent = "📧 重试发送";
         }
     }
 
@@ -426,7 +428,7 @@
         resultPoints.textContent = String(state.points);
         resultMinutes.textContent = tabletMinutes() + " 分钟";
 
-        const allCleared = Object.keys(state.cleared).length === LEVELS.length;
+        const allCleared = Object.keys(state.cleared).length === LEVELS.length - 1;
         // Email button only when all 6 levels cleared
         const emailArea = document.querySelector(".email-send-area");
         emailArea.classList.toggle("hidden", !allCleared);
@@ -476,134 +478,18 @@
 
     // ============ Collection ============
 
-    async function startCollection() {
-        collectedItems = []; isRecording = false; mediaRecorder = null; audioChunks = [];
-        try { (await idbGetAll()).forEach((item) => collectedItems.push({ id: collectedItems.length, type: item.type, data: URL.createObjectURL(item.blob), dbId: item.id })); } catch {}
-        renderCollection(); showScreen(collectionScreen);
+    function startCollection() {
+        collectionEmailArea.classList.add("hidden");
+        collectionEmailStatus.textContent = ""; collectionEmailStatus.className = "email-status";
+        showScreen(collectionScreen);
     }
 
-    function updateCollectionProgress() {
-        const n = collectedItems.length;
-        collectionProgressText.textContent = "已收集 " + n + " / " + COLLECTION_MIN + " 条好词好句";
-        collectionProgressFill.style.width = Math.min((n / COLLECTION_MIN) * 100, 100) + "%";
-        collectionSubmitBtn.disabled = n < COLLECTION_MIN;
-        collectionSubmitBtn.textContent = n >= COLLECTION_MIN ? "提交收集，领取 1 分！" : "提交收集（需至少 " + COLLECTION_MIN + " 条）";
-    }
-
-    function renderCollection() {
-        collectionFeedback.textContent = ""; collectionFeedback.className = "feedback";
-        recordingStatus.textContent = ""; audioPreview.classList.add("hidden");
-        updateCollectionProgress(); collectionList.innerHTML = "";
-
-        collectedItems.forEach((item, i) => {
-            const div = document.createElement("div"); div.className = "collection-item";
-            const num = document.createElement("span"); num.className = "item-num"; num.textContent = String(i + 1);
-            div.appendChild(num);
-
-            if (item.type === "image") {
-                const img = document.createElement("img"); img.className = "item-thumb"; img.src = item.data; div.appendChild(img);
-            } else {
-                const audio = document.createElement("audio"); audio.className = "item-audio"; audio.controls = true; audio.src = item.data; div.appendChild(audio);
-            }
-
-            const del = document.createElement("button"); del.className = "item-delete"; del.textContent = "🗑️";
-            del.addEventListener("click", async () => {
-                if (item.dbId != null) try { await idbDelete(item.dbId); } catch {}
-                URL.revokeObjectURL(item.data); collectedItems.splice(i, 1); renderCollection();
-            });
-            div.appendChild(del); collectionList.appendChild(div);
-        });
-    }
-
-    function handleCameraClick() { cameraInput.click(); }
-
-    async function handleCameraFile(e) {
-        const file = e.target.files[0]; if (!file) return;
-        try {
-            const dbId = await idbAdd(file, "image");
-            collectedItems.push({ id: collectedItems.length, type: "image", data: URL.createObjectURL(file), dbId });
-            renderCollection(); collectionFeedback.textContent = "照片记录成功！"; collectionFeedback.className = "feedback good";
-        } catch { collectionFeedback.textContent = "保存失败"; collectionFeedback.className = "feedback bad"; }
-        cameraInput.value = "";
-    }
-
-    async function handleRecordClick() {
-        if (isRecording) { stopRecording(); return; }
-        if (!navigator.mediaDevices?.getUserMedia) {
-            recordingStatus.textContent = "浏览器不支持录音";
-            return;
-        }
-        recordingStatus.textContent = "正在请求麦克风权限...";
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            audioChunks = [];
-            let opts = {};
-            const types = ["audio/webm", "audio/mp4", "audio/ogg", "audio/wav", ""];
-            for (const t of types) {
-                if (!t || MediaRecorder.isTypeSupported(t)) {
-                    opts = t ? { mimeType: t } : {};
-                    break;
-                }
-            }
-            recordingStatus.textContent = "🔴 正在录音中...";
-            mediaRecorder = new MediaRecorder(stream, opts);
-            mediaRecorder.ondataavailable = (e) => { if (e.data.size) audioChunks.push(e.data); };
-            mediaRecorder.onstop = async () => {
-                const actualType = mediaRecorder.mimeType || "audio/webm";
-                const blob = new Blob(audioChunks, { type: actualType });
-                try {
-                    const dbId = await idbAdd(blob, "audio");
-                    collectedItems.push({ id: collectedItems.length, type: "audio", data: URL.createObjectURL(blob), dbId });
-                    renderCollection(); collectionFeedback.textContent = "录音保存成功！"; collectionFeedback.className = "feedback good";
-                } catch { collectionFeedback.textContent = "保存失败"; collectionFeedback.className = "feedback bad"; }
-                stream.getTracks().forEach((t) => t.stop()); recordingStatus.textContent = "";
-            };
-            mediaRecorder.onerror = (e) => {
-                console.error("MediaRecorder error:", e);
-                recordingStatus.textContent = "录音出错，请重试";
-                stopRecording();
-            };
-            mediaRecorder.start(1000);
-            isRecording = true;
-            recordBtn.classList.add("recording"); recordBtnText.textContent = "停止录音";
-        } catch (err) {
-            console.error("录音错误:", err.name, err.message);
-            if (err.name === "NotAllowedError" || err.name === "PermissionDeniedError")
-                recordingStatus.textContent = "请在浏览器设置中允许麦克风权限";
-            else if (err.name === "NotFoundError")
-                recordingStatus.textContent = "未检测到麦克风设备";
-            else
-                recordingStatus.textContent = "录音失败：" + (err.message || "未知错误");
-        }
-    }
-
-    function stopRecording() {
-        if (mediaRecorder?.state === "recording") mediaRecorder.stop();
-        isRecording = false; recordBtn.classList.remove("recording"); recordBtnText.textContent = "开始录音";
-    }
-
-    async function submitCollection() {
-        if (collectedItems.length < COLLECTION_MIN) return;
-
-        state.points += POINT_PER_PASS; state.cleared[levelIndex] = true;
-        if (!state.levelResults) state.levelResults = {};
-        state.levelResults[levelIndex] = { type: "collection", itemCount: collectedItems.length, passed: true };
-        saveState(); updateStatsBar();
-
-        resultTitle.textContent = "好词好句收集完成！";
-        resultDetail.textContent = "共收集 " + collectedItems.length + " 条好词好句";
-        resultReward.innerHTML = '<p class="reward-gain">+' + POINT_PER_PASS + ' 分</p>' +
-            '<p class="reward-time">兑换平板时间 +' + MINUTES_PER_POINT + ' 分钟</p>';
-        burstFireworks(true);
-
-        if (Object.keys(state.cleared).length === LEVELS.length) {
-            resultTitle.textContent = "🎉 全部通关！";
-            resultReward.innerHTML += '<p class="reward-final">累计 ' + state.points + ' 分 · 平板 ' + tabletMinutes() + ' 分钟</p>';
-        }
-
-        collectedItems.forEach((i) => URL.revokeObjectURL(i.data));
-        collectedItems = []; isRecording = false;
-        showResultScreen();
+    function submitCollection() {
+        collectionEmailArea.classList.remove("hidden");
+        sendEmailCollectionBtn.disabled = false;
+        sendEmailCollectionBtn.textContent = "📧 发送报告到邮箱";
+        collectionEmailStatus.textContent = "";
+        collectionEmailStatus.className = "email-status";
     }
 
     // ============ Main Flow ============
@@ -860,15 +746,17 @@
         renderMap();
     });
 
-    cameraBtn.addEventListener("click", handleCameraClick);
-    cameraInput.addEventListener("change", handleCameraFile);
-    recordBtn.addEventListener("click", handleRecordClick);
     collectionSubmitBtn.addEventListener("click", submitCollection);
-    collectionBackBtn.addEventListener("click", () => { if (isRecording) stopRecording(); renderMap(); });
+    collectionBackBtn.addEventListener("click", renderMap);
+    sendEmailCollectionBtn.addEventListener("click", sendReport);
 
     // ============ Init ============
 
     async function init() {
+        // Register service worker for PWA
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("service-worker.js").catch(() => {});
+        }
         try { await openDB(); } catch (e) { console.warn("IndexedDB:", e); }
         try {
             loadQuestionFiles(); ready = true;
