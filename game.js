@@ -103,6 +103,28 @@
         const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob);
     });
 
+    // Resize image blob to max 400px before encoding (EmailJS free tier ~50KB limit)
+    function resizeImageBlob(blob) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            const url = URL.createObjectURL(blob);
+            img.onload = () => {
+                URL.revokeObjectURL(url);
+                const MAX = 400;
+                let w = img.width, h = img.height;
+                if (w <= MAX && h <= MAX) { resolve(blob); return; }
+                const ratio = Math.min(MAX / w, MAX / h);
+                w = Math.round(w * ratio); h = Math.round(h * ratio);
+                const canvas = document.createElement("canvas");
+                canvas.width = w; canvas.height = h;
+                canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+                canvas.toBlob((b) => resolve(b || blob), "image/jpeg", 0.7);
+            };
+            img.onerror = () => { URL.revokeObjectURL(url); resolve(blob); };
+            img.src = url;
+        });
+    }
+
     async function sendReport() {
         const tk = todayKey();
         if (state.lastSubmitDate === tk) {
@@ -192,7 +214,7 @@
 
             const photos = [];
             for (let i = 0; i < Math.min(images.length, 5); i++)
-                try { photos.push(await blobToDataURL(images[i].blob)); } catch {}
+                try { const resized = await resizeImageBlob(images[i].blob); photos.push(await blobToDataURL(resized)); } catch {}
 
             const params = {
                 to_email: RECIPIENT,
@@ -505,9 +527,18 @@
         cameraInput.value = "";
     }
 
+    function getSupportedMimeType() {
+        for (const t of ["audio/mp4", "audio/webm", "audio/ogg", "audio/wav"])
+            if (MediaRecorder.isTypeSupported(t)) return t;
+        return "audio/mp4";
+    }
+
     async function handleRecordClick() {
         if (isRecording) { stopRecording(); return; }
-        if (!navigator.mediaDevices?.getUserMedia) { recordingStatus.textContent = "当前浏览器不支持录音"; return; }
+        if (!navigator.mediaDevices?.getUserMedia) {
+            recordingStatus.textContent = "浏览器不支持录音，请使用 Safari 或 Chrome";
+            return;
+        }
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
             audioChunks = []; const mt = getSupportedMimeType();
@@ -522,20 +553,19 @@
                 } catch { collectionFeedback.textContent = "保存失败"; collectionFeedback.className = "feedback bad"; }
                 stream.getTracks().forEach((t) => t.stop()); recordingStatus.textContent = "";
             };
-            mediaRecorder.start(); isRecording = true;
+            mediaRecorder.onerror = () => { recordingStatus.textContent = "录音出错，请重试"; stopRecording(); };
+            mediaRecorder.start();
+            isRecording = true;
             recordBtn.classList.add("recording"); recordBtnText.textContent = "停止录音"; recordingStatus.textContent = "🔴 正在录音中...";
-        } catch { recordingStatus.textContent = "无法访问麦克风"; }
+        } catch (err) {
+            console.error("录音错误:", err.name, err.message);
+            recordingStatus.textContent = "请允许麦克风权限后重试";
+        }
     }
 
     function stopRecording() {
         if (mediaRecorder?.state === "recording") mediaRecorder.stop();
         isRecording = false; recordBtn.classList.remove("recording"); recordBtnText.textContent = "开始录音";
-    }
-
-    function getSupportedMimeType() {
-        for (const t of ["audio/webm", "audio/mp4", "audio/ogg", "audio/wav"])
-            if (MediaRecorder.isTypeSupported(t)) return t;
-        return "audio/webm";
     }
 
     async function submitCollection() {
@@ -695,6 +725,27 @@
             snakeTimer = setInterval(snakeTick, 300);
         });
     }
+
+    // Debug mode: 5 rapid clicks on score area unlocks all levels
+    let debugClicks = 0, debugTimer = null;
+    statPoints.parentElement.addEventListener("click", () => {
+        debugClicks++;
+        clearTimeout(debugTimer);
+        if (debugClicks >= 5) {
+            debugClicks = 0;
+            for (let i = 0; i < LEVELS.length; i++) {
+                state.cleared[i] = true;
+                state.points = Math.min(i + 1, 6);
+                state.levelResults[i] = LEVELS[i].type === "collection"
+                    ? { type: "collection", itemCount: 3, passed: true }
+                    : { type: LEVELS[i].type, correct: 5, total: 5, passed: true };
+            }
+            state.points = 6;
+            saveState(); updateStatsBar(); renderMap();
+        } else {
+            debugTimer = setTimeout(() => { debugClicks = 0; }, 800);
+        }
+    });
 
     // Direction button handlers
     document.querySelectorAll(".snake-dir").forEach((btn) => {
