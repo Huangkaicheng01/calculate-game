@@ -755,7 +755,9 @@
                     : { type: LEVELS[i].type, correct: 5, total: 5, passed: true };
             }
             state.points = 6;
-            saveState(); updateStatsBar(); renderMap();
+            saveState(); updateStatsBar();
+            // Auto-jump to collection level (index 5)
+            startLevel(5);
         } else {
             debugTimer = setTimeout(() => { debugClicks = 0; }, 800);
         }
