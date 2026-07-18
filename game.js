@@ -637,6 +637,9 @@
         if (!snakeLimitless && snakeRestarts < 2 && snakeOnDone) {
             snakeRestart.classList.remove("hidden");
             snakeRestart.textContent = "🔄 重新开始（还可玩 " + (2 - snakeRestarts) + " 次）";
+        } else if (snakeLimitless) {
+            snakeRestart.classList.remove("hidden");
+            snakeRestart.textContent = "🔄 重新开始";
         } else {
             snakeRestart.classList.add("hidden");
         }
@@ -689,7 +692,7 @@
             snakeActive = true; snakeStarted = true;
             snakeMsg.textContent = "开始！";
             snakeMsg.style.color = "#3aad7a";
-            snakeTimer = setInterval(snakeTick, 150);
+            snakeTimer = setInterval(snakeTick, 200);
         });
     }
 
@@ -715,7 +718,7 @@
             snakeActive = true; snakeStarted = true;
             snakeMsg.textContent = "开始！";
             snakeMsg.style.color = "#3aad7a";
-            snakeTimer = setInterval(snakeTick, 150);
+            snakeTimer = setInterval(snakeTick, 200);
         });
     });
 
