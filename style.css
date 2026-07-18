@@ -468,3 +468,230 @@ body {
     body { padding: 1rem; }
     .option { font-size: 1.2rem; }
 }
+
+/* 收集关卡 */
+.collection-progress {
+    margin-bottom: 1.5rem;
+}
+
+.collection-progress span {
+    display: block;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+
+.collection-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.collection-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+    background: var(--cream);
+    color: var(--ink);
+    font-family: inherit;
+    font-weight: 800;
+    font-size: 1rem;
+    padding: 1.2rem 1rem;
+    border-radius: 18px;
+    border: 3px solid transparent;
+    cursor: pointer;
+    box-shadow: 0 4px 0 rgba(31, 58, 77, 0.12);
+    transition: transform 0.12s ease, border-color 0.12s ease;
+}
+
+.collection-action-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    border-color: rgba(232, 93, 76, 0.45);
+}
+
+.collection-action-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.collection-action-btn.recording {
+    border-color: var(--coral);
+    background: #ffe0dc;
+    animation: pulse-rec 1.2s ease-in-out infinite;
+}
+
+.action-icon {
+    font-size: 2rem;
+}
+
+.recording-status {
+    font-weight: 800;
+    font-size: 0.95rem;
+    min-height: 1.5rem;
+    color: var(--coral-deep);
+}
+
+.collection-list {
+    display: grid;
+    gap: 0.65rem;
+    max-height: min(38vh, 280px);
+    overflow-y: auto;
+    margin-bottom: 1rem;
+}
+
+.collection-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--cream);
+    border-radius: 14px;
+    padding: 0.6rem 0.85rem;
+    box-shadow: 0 3px 0 rgba(31, 58, 77, 0.08);
+    animation: fade-in 0.35s ease;
+}
+
+.collection-item .item-num {
+    flex: 0 0 1.8rem;
+    height: 1.8rem;
+    border-radius: 50%;
+    background: var(--mint);
+    color: var(--cream);
+    font-family: "ZCOOL KuaiLe", cursive;
+    font-size: 0.95rem;
+    display: grid;
+    place-items: center;
+}
+
+.collection-item .item-thumb {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 2px solid rgba(31, 58, 77, 0.1);
+}
+
+.collection-item .item-audio {
+    flex: 1;
+    min-width: 0;
+    height: 36px;
+}
+
+.collection-item .item-delete {
+    appearance: none;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0.25rem 0.5rem;
+    opacity: 0.5;
+    transition: opacity 0.15s;
+}
+
+.collection-item .item-delete:hover {
+    opacity: 1;
+}
+
+.collection-submit-area {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+@keyframes pulse-rec {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(232, 93, 76, 0.4); }
+    50% { box-shadow: 0 0 0 8px rgba(232, 93, 76, 0); }
+}
+
+/* 邮箱设置 */
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    animation: fade-in 0.25s ease;
+}
+
+.settings-panel {
+    background: var(--cream);
+    border-radius: 20px;
+    padding: 1.5rem 1.25rem;
+    width: min(380px, 90vw);
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 16px 48px rgba(31, 58, 77, 0.25);
+}
+
+.settings-panel h2 {
+    font-family: "ZCOOL KuaiLe", cursive;
+    font-size: 1.5rem;
+    color: var(--coral-deep);
+    margin-bottom: 0.5rem;
+}
+
+.settings-hint {
+    font-size: 0.88rem;
+    line-height: 1.5;
+    opacity: 0.75;
+    margin-bottom: 1rem;
+}
+
+.settings-hint a {
+    color: var(--coral-deep);
+}
+
+.settings-form {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.settings-form label {
+    display: block;
+    font-weight: 800;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.settings-form input {
+    display: block;
+    width: 100%;
+    margin-top: 0.3rem;
+    border: 2px solid rgba(31, 58, 77, 0.15);
+    background: #fff;
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 0.95rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 12px;
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.settings-form input:focus {
+    border-color: var(--coral);
+}
+
+.settings-actions {
+    display: grid;
+    gap: 0.65rem;
+    margin-top: 0.25rem;
+}
+
+.email-status {
+    font-weight: 700;
+    font-size: 0.95rem;
+    min-height: 1.4rem;
+    text-align: center;
+}
+
+.email-status.success {
+    color: var(--mint);
+}
+
+.email-status.error {
+    color: var(--coral-deep);
+}
