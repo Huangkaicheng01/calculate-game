@@ -24,6 +24,6 @@ window.QUESTION_DATA.levels = [
   },
   {
     "type": "collection",
-    "name": "第 6 关 · 小天才录音"
+    "name": "第 6 关 · 好词好句收集"
   }
 ];

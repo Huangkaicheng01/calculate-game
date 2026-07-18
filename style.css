@@ -512,7 +512,14 @@ body {
     font-size: 1.05rem;
     color: var(--coral-deep);
     margin-bottom: 0.75rem;
-    line-height: 1.4;
+    line-height: 1.5;
+}
+
+.collection-image {
+    width: 200px;
+    height: 133px;
+    margin: 0 auto 1rem;
+    background: url("collection-banner.svg") center/contain no-repeat;
 }
 
 .collection-progress span {

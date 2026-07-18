@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200" width="300" height="200">
+  <!-- background -->
+  <rect width="300" height="200" rx="20" fill="#FFF8F0"/>
+  <!-- wrist band -->
+  <rect x="105" y="100" width="90" height="20" rx="6" fill="#FFB347"/>
+  <rect x="100" y="115" width="100" height="30" rx="4" fill="#E85D4C"/>
+  <!-- watch face -->
+  <rect x="118" y="55" width="64" height="48" rx="14" fill="#7EC8E3" stroke="#5BA4C0" stroke-width="3"/>
+  <!-- watch screen -->
+  <rect x="125" y="62" width="50" height="28" rx="6" fill="#FFFFFF"/>
+  <!-- sound waves -->
+  <path d="M160 68 Q168 72 160 76" stroke="#E85D4C" stroke-width="2" fill="none"/>
+  <path d="M164 64 Q174 72 164 80" stroke="#E85D4C" stroke-width="2" fill="none"/>
+  <!-- mic icon on screen -->
+  <rect x="140" y="68" width="8" height="14" rx="4" fill="#E85D4C"/>
+  <path d="M140 82 L136 86 L144 86 L148 82" stroke="#E85D4C" stroke-width="2" fill="none"/>
+  <!-- hand/arm -->
+  <circle cx="100" cy="125" r="12" fill="#FFD4A3"/>
+  <circle cx="200" cy="125" r="12" fill="#FFD4A3"/>
+  <!-- stars decoration -->
+  <text x="50" y="50" font-size="22">⭐</text>
+  <text x="230" y="40" font-size="18">✨</text>
+  <text x="40" y="160" font-size="16">💬</text>
+  <text x="240" y="165" font-size="20">🎤</text>
+  <!-- button at bottom -->
+  <rect x="85" y="150" width="130" height="36" rx="18" fill="#3AAD7A"/>
+  <text x="150" y="174" text-anchor="middle" fill="white" font-family="sans-serif" font-size="14" font-weight="bold">发送给爸爸 📨</text>
+</svg>

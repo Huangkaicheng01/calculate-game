@@ -16,7 +16,7 @@
         "div-3x1": "三位数 ÷ 一位数 · 填空",
         "div-3x2": "三位数 ÷ 两位数 · 填空",
         science: "科学常识 · 选择题", english: "英语单词 · 选择题",
-        collection: "📻 小天才录音 · 发送好词好句",
+        collection: "📻 好词好句收集 · 发送给爸爸",
     };
 
     let LEVELS = [], SCIENCE_BANK = [], ENGLISH_BANK = [];
