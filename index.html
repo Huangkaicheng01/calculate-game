@@ -16,6 +16,7 @@
     <main class="app">
         <header class="brand">
             <h1 id="brand-title">学科闯关赛</h1>
+            <p id="today-date" class="today-date"></p>
             <p class="tagline">共 6 关 · 自由选择关卡 · 每关通关得 1 分 · 满分共可领平板 30 分钟</p>
         </header>
 
@@ -55,6 +56,7 @@
                 <button type="submit" class="btn primary submit-btn">提交</button>
             </form>
             <p id="feedback" class="feedback" aria-live="polite"></p>
+            <button type="button" id="quiz-back-btn" class="btn ghost quiz-back">返回地图</button>
         </section>
 
         <section id="result-screen" class="screen hidden">
@@ -70,12 +72,11 @@
                 <button type="button" id="retry-btn" class="btn primary">再闯一次</button>
                 <button type="button" id="home-btn" class="btn ghost">返回地图</button>
             </div>
-            <div id="collection-result-actions" class="result-actions hidden">
-                <button type="button" id="send-email-btn" class="btn primary">
-                    <span class="action-icon">📧</span> 发送结果到邮箱
+            <div class="email-send-area">
+                <button type="button" id="send-email-btn" class="btn primary full-width">
+                    📧 提交结果到爸爸邮箱
                 </button>
                 <p id="email-send-status" class="email-status"></p>
-                <button type="button" id="home-btn-2" class="btn ghost">返回地图</button>
             </div>
         </section>
 

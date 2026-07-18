@@ -56,6 +56,14 @@ body {
     animation: float-title 2.4s ease-in-out infinite alternate;
 }
 
+.today-date {
+    font-family: "Nunito", sans-serif;
+    font-size: 0.95rem;
+    font-weight: 800;
+    opacity: 0.6;
+    margin-bottom: 0.2rem;
+}
+
 .tagline {
     margin-top: 0.35rem;
     font-size: 0.92rem;
@@ -429,6 +437,22 @@ body {
 
 .feedback.bad {
     color: var(--coral-deep);
+}
+
+.quiz-back {
+    margin-top: 1rem;
+    width: 100%;
+}
+
+.email-send-area {
+    margin-top: 1rem;
+    display: grid;
+    gap: 0.5rem;
+}
+
+.email-send-area .btn.full-width {
+    width: 100%;
+    display: block;
 }
 
 .result-score {
