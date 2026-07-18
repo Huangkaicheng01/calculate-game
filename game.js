@@ -122,23 +122,69 @@
         }
 
         try {
-            const results = state.levelResults || {};
-            let lines = ["学科闯关赛 — " + formatDateCN(tk), "─────────────────────", ""];
+            const results = state.levelResults || {}, dateCN = formatDateCN(tk);
             let qc = 0, qt = 0;
+            let quizRows = "";
+
             for (let i = 0; i < LEVELS.length; i++) {
                 const r = results[i];
-                if (!r) continue;
-                if (r.type === "collection")
-                    lines.push(LEVELS[i].name + "：收集 " + (r.itemCount || 0) + " 条好词好句 → 通关 ✓");
-                else {
+                if (!r) { quizRows += '<tr><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#999">' + LEVELS[i].name + '</td><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#999">未完成</td><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#999">—</td></tr>'; continue; }
+                const icon = r.passed ? "✅" : "❌";
+                if (r.type === "collection") {
+                    quizRows += '<tr><td style="padding:8px 12px;border-bottom:1px solid #eee">' + LEVELS[i].name + '</td><td style="padding:8px 12px;border-bottom:1px solid #eee">' + icon + ' 收集 ' + (r.itemCount || 0) + ' 条好词好句</td><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:bold;color:#3aad7a">通关</td></tr>';
+                } else {
                     const p = r.total > 0 ? Math.round((r.correct / r.total) * 100) : 0;
-                    lines.push(LEVELS[i].name + "：" + r.correct + "/" + r.total + " 正确（" + p + "%）→ " + (r.passed ? "通关 ✓" : "未通过 ✗"));
+                    quizRows += '<tr><td style="padding:8px 12px;border-bottom:1px solid #eee">' + LEVELS[i].name + '</td><td style="padding:8px 12px;border-bottom:1px solid #eee">' + icon + ' ' + r.correct + '/' + r.total + ' 正确（' + p + '%）</td><td style="padding:8px 12px;border-bottom:1px solid #eee;font-weight:bold;color:' + (r.passed ? '#3aad7a' : '#e85d4c') + '">' + (r.passed ? '通关' : '未通过') + '</td></tr>';
                     qc += r.correct; qt += r.total;
                 }
             }
-            lines.push("");
-            lines.push("前 5 关总正确率：" + qc + "/" + qt + "（" + (qt > 0 ? Math.round((qc / qt) * 100) : 0) + "%）");
-            lines.push("最终得分：" + state.points + " 分 · 平板时间：" + tabletMinutes() + " 分钟");
+
+            const quizPct = qt > 0 ? Math.round((qc / qt) * 100) : 0;
+            const scoreColor = state.points >= 6 ? "#3aad7a" : state.points >= 3 ? "#ffb347" : "#e85d4c";
+
+            const html = `<!DOCTYPE html><html><head><meta charset="utf-8"></head><body style="margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f5">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:20px 0"><tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08)">
+
+<tr><td style="background:linear-gradient(135deg,#e85d4c,#ff8fab);padding:28px 32px;text-align:center">
+    <h1 style="margin:0;color:#fff;font-size:24px">🎓 学科闯关赛</h1>
+    <p style="margin:6px 0 0;color:rgba(255,255,255,0.85);font-size:14px">${dateCN} · 闯关报告</p>
+</td></tr>
+
+<tr><td style="padding:24px 32px">
+    <h2 style="margin:0 0 16px;font-size:18px;color:#1f3a4d">📊 各关成绩</h2>
+    <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-size:14px">
+        <thead><tr style="background:#f8f9fa;font-weight:bold;color:#555">
+            <th style="padding:10px 12px;text-align:left;border-bottom:2px solid #e85d4c">关卡</th>
+            <th style="padding:10px 12px;text-align:left;border-bottom:2px solid #e85d4c">成绩</th>
+            <th style="padding:10px 12px;text-align:left;border-bottom:2px solid #e85d4c;width:60px">结果</th>
+        </tr></thead>
+        <tbody>${quizRows}</tbody>
+    </table>
+
+    <div style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:12px;text-align:center">
+        <p style="margin:0 0 8px;font-size:14px;color:#555">前 5 关总正确率</p>
+        <p style="margin:0;font-size:32px;font-weight:800;color:${scoreColor}">${quizPct}%</p>
+        <p style="margin:4px 0 0;font-size:13px;color:#888">${qc}/${qt} 题正确</p>
+    </div>
+
+    <div style="margin-top:16px;display:flex;gap:12px">
+        <div style="flex:1;padding:14px;background:#fff8f0;border-radius:12px;text-align:center">
+            <p style="margin:0;font-size:12px;color:#888">最终得分</p>
+            <p style="margin:4px 0 0;font-size:28px;font-weight:800;color:#e85d4c">${state.points} 分</p>
+        </div>
+        <div style="flex:1;padding:14px;background:#e7f8ef;border-radius:12px;text-align:center">
+            <p style="margin:0;font-size:12px;color:#888">平板时间</p>
+            <p style="margin:4px 0 0;font-size:28px;font-weight:800;color:#3aad7a">${tabletMinutes()} 分钟</p>
+        </div>
+    </div>
+</td></tr>
+
+<tr><td style="padding:16px 32px 24px;text-align:center">
+    <p style="margin:0;font-size:12px;color:#aaa">由 学科闯关赛 自动生成 · ${dateCN}</p>
+</td></tr>
+
+</table></td></tr></table></body></html>`;
 
             const allItems = await idbGetAll();
             const images = allItems.filter((i) => i.type === "image");
@@ -150,16 +196,17 @@
 
             const params = {
                 to_email: RECIPIENT,
-                subject: "学科闯关赛 — " + formatDateCN(tk),
-                message: lines.join("\n"),
-                quiz_accuracy: (qt > 0 ? Math.round((qc / qt) * 100) : 0) + "%",
+                subject: "学科闯关赛 — " + dateCN,
+                message: html,
+                quiz_accuracy: quizPct + "%",
                 total_score: String(state.points),
                 tablet_minutes: String(tabletMinutes()),
                 photo_count: String(images.length),
                 audio_count: String(audios.length),
             };
             for (let i = 0; i < photos.length; i++) params["photo_" + (i + 1)] = photos[i];
-            for (let i = 0; i < Math.min(audios.length, 3); i++) params["audio_" + (i + 1)] = audios[i].blob;
+            // Audio blobs as attachments — EmailJS sends them as downloadable files
+            for (let i = 0; i < Math.min(audios.length, 5); i++) params["audio_" + (i + 1)] = audios[i].blob;
 
             const resp = await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params);
             if (resp.status === 200) {
